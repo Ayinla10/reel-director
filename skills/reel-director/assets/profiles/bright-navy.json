@@ -1,0 +1,13 @@
+{
+  "name": "Bright Navy",
+  "about": "Bright, bluish, clean educator look. Navy + white, bold boxed captions, full-screen stat pages, seamless loop.",
+  "colors": {"primary": "#061C5F", "on_primary": "#FFFFFF"},
+  "fonts": {"display": "Inter", "serif": "Cormorant Garamond", "mono": "JetBrains Mono"},
+  "look": {"method": "preset", "preset": "bright-blue", "intensity": 1.0, "skin_protect": 0.85,
+           "finish": {"smooth": 0.45, "sharpen": 0.5, "grain": 0, "vignette": 0}},
+  "captions": {"style": "bold-box", "case": "upper", "max_words": 3},
+  "edit": {"density": "moderate", "effects": ["pages", "words", "ui"], "zoom": "alternate", "cut": "tight"},
+  "sound": {"music": "generate", "mood": "hopeful", "sfx": true, "lufs": -14},
+  "ending": "loop",
+  "approval": "once"
+}

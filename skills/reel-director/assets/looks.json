@@ -1,0 +1,48 @@
+{
+  "bright-clean": {
+    "about": "Bright, neutral, crisp. White walls stay white, skin warm and natural. Safe default.",
+    "black": 0.025, "white": 0.97, "min_mid": 0.5, "bg_rgb": [238, 238, 240],
+    "shadow_tint": [0, 0, 0.004], "contrast": 0.1, "saturation": 1.08,
+    "skin_protect": 0.85, "skin_gain": 1.12, "skin_warmth": [0.01, -0.006]
+  },
+  "bright-blue": {
+    "about": "Bright with a soft periwinkle-blue wall and bluish whites, warm skin. Clean educator look.",
+    "black": 0.03, "white": 0.97, "min_mid": 0.5, "bg_rgb": [178, 199, 236],
+    "shadow_tint": [-0.01, 0, 0.015], "contrast": 0.08, "saturation": 1.1,
+    "skin_protect": 0.85, "skin_gain": 1.1, "skin_warmth": [0.012, -0.008]
+  },
+  "natural": {
+    "about": "Minimal: just correct exposure and white balance. Looks like a better camera.",
+    "black": 0.02, "white": 0.96, "min_mid": 0.42, "bg_rgb": [215, 215, 215],
+    "contrast": 0.05, "saturation": 1.04, "skin_protect": 0.7, "skin_gain": 1.04
+  },
+  "warm-film": {
+    "about": "Warm cream highlights, teal-leaning shadows, gentle film contrast.",
+    "black": 0.04, "white": 0.93, "max_mid": 0.48, "bg_rgb": [206, 186, 160],
+    "shadow_tint": [-0.012, 0.004, 0.02], "contrast": 0.18, "saturation": 0.95,
+    "skin_protect": 0.8, "skin_warmth": [0.016, -0.01]
+  },
+  "golden-hour": {
+    "about": "Sunny golden glow on the background, rich skin.",
+    "black": 0.03, "white": 0.96, "min_mid": 0.48, "bg_rgb": [238, 214, 172],
+    "shadow_tint": [0.004, 0, -0.01], "contrast": 0.1, "saturation": 1.12,
+    "skin_protect": 0.85, "skin_gain": 1.08, "skin_warmth": [0.018, -0.012]
+  },
+  "soft-pastel": {
+    "about": "Airy pastel pink/lilac background, lifted blacks, soft contrast.",
+    "black": 0.06, "white": 0.96, "min_mid": 0.52, "bg_rgb": [234, 208, 220],
+    "shadow_tint": [0.01, 0, 0.01], "contrast": 0.02, "saturation": 1.0,
+    "skin_protect": 0.85, "skin_gain": 1.12
+  },
+  "moody": {
+    "about": "Darker, cinematic, cool shadows, rich contrast. For serious or dramatic topics.",
+    "black": 0.03, "white": 0.88, "max_mid": 0.36, "bg_rgb": [118, 124, 134],
+    "shadow_tint": [-0.012, 0, 0.02], "contrast": 0.22, "saturation": 0.92,
+    "skin_protect": 0.85, "skin_warmth": [0.012, -0.006]
+  },
+  "mono": {
+    "about": "Clean black and white with punchy contrast.",
+    "black": 0.03, "white": 0.95, "bg_rgb": [215, 215, 215],
+    "contrast": 0.18, "saturation": 0.0, "skin_protect": 0.0
+  }
+}

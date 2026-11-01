@@ -1,0 +1,13 @@
+{
+  "name": "Warm Film",
+  "about": "Cinematic warm film grade with subtle grain, cream pages, elegant serif titles, coloured-word captions, follow card ending.",
+  "colors": {"primary": "#5A3E2B", "on_primary": "#FFF8EE", "page_bg": "#F6EFE4", "wall_ink": "#FFF8EE", "highlight": "#F2C48D"},
+  "fonts": {"display": "DM Sans", "serif": "Playfair Display", "mono": "IBM Plex Mono"},
+  "look": {"method": "preset", "preset": "warm-film", "intensity": 1.0, "skin_protect": 0.8,
+           "finish": {"smooth": 0.3, "sharpen": 0.4, "grain": 0.4, "vignette": 0.5}},
+  "captions": {"style": "color", "case": "sentence", "max_words": 4},
+  "edit": {"density": "minimal", "effects": ["pages", "words"], "zoom": "alternate", "cut": "tight"},
+  "sound": {"music": "generate", "mood": "calm", "sfx": true, "lufs": -14},
+  "ending": "follow",
+  "approval": "once"
+}

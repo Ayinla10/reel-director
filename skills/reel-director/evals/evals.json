@@ -1,0 +1,23 @@
+{
+  "skill_name": "reel-director",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/reel-director C:\\Users\\me\\Downloads\\IMG_2231.MOV - first time using this. I want it to look like my last TikTok https://www.tiktok.com/@someone/video/123 and my brand colour is #0E7C66 with white.",
+      "expected_output": "Runs the brand interview in batched rounds, captures reference frames from the link, saves a profile, builds a reference-matched grade, shows one preview check, renders a 9:16 MP4 at social size with captions in #0E7C66/white, full-screen pages for stats, no graphics over the face.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "edit D:\\clips\\pricing-talk.mp4 with my 'studio' profile. I need 9:16 and 16:9, only cut the obvious mistakes, and end with comment the word PRICE for the template.",
+      "expected_output": "Skips the brand interview, asks/uses per-video choices (formats, light cut, comment CTA with keyword PRICE), prepares + grades once, cuts/builds/renders both formats, ends with a comment page showing PRICE.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Voici ma vidéo (en français) D:\\videos\\conseil.mov. J'utilise un preset CapCut, je t'envoie avant.png et apres.png. Fais un Reel propre avec sous-titres.",
+      "expected_output": "Transcribes in French, uses the before/after pair to learn the CapCut preset (method pair), French captions, conversation in French, renders a 9:16 Reel.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*_reel/
+_npm/
+node_modules/
+.DS_Store
+*.mp4
+*.mov
+!docs/*.mp4

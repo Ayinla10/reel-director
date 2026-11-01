@@ -1,0 +1,14 @@
+{
+  "name": "Bold Creator",
+  "about": "High-energy creator style: bright clean grade, black + electric yellow, condensed captions, rich effects, comment-keyword CTA.",
+  "colors": {"primary": "#111111", "on_primary": "#FFE14D", "page_bg": "#FFE14D", "ink": "#111111", "wall_ink": "#111111", "highlight": "#FFE14D"},
+  "fonts": {"display": "Anton", "serif": "Instrument Serif", "mono": "Space Mono"},
+  "look": {"method": "preset", "preset": "bright-clean", "intensity": 1.0, "skin_protect": 0.85,
+           "finish": {"smooth": 0.35, "sharpen": 0.6, "grain": 0, "vignette": 0}},
+  "captions": {"style": "bold-box", "case": "upper", "max_words": 2},
+  "edit": {"density": "rich", "effects": ["pages", "words", "ui", "comments"], "zoom": "alternate", "cut": "tight"},
+  "sound": {"music": "generate", "mood": "energetic", "sfx": true, "lufs": -14},
+  "ending": "comment",
+  "cta": {"keyword": "GUIDE"},
+  "approval": "once"
+}

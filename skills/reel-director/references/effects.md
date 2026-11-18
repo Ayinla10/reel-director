@@ -2,7 +2,10 @@
 
 `beats.json` = `{"beats": [ ... ]}`, times in seconds on the **cut** timeline (words_cut.json).
 Every beat has `type`, `at`, `until`. Optional on any beat: `hide_captions` (words default true,
-pages default false; title pages always hide).
+pages default false; title pages always hide), `why` (one short reason, shown in the approval list),
+`skip` (set by moments.py when the owner says no to a moment).
+Optional top-level `"include": {"broll": bool, "animations": bool, "graphics": bool}` - the owner's
+answers for this video; families set to false are dropped at build time.
 
 ## words - kinetic text on the wall above the head
 ```json
@@ -36,8 +39,11 @@ All pages accept `label` (small mono caption at the top, e.g. "AFRICA · MOBILE 
 | `converge` | `items: [{text, icon, at}]` (3), `target`, `target_sub`, `target_at` |
 | `apps` | `items: [{name, letter}]` (4), `delete_at`, `after` (serif word shown after deletion) |
 | `pick` | `items: [{text, icon, at}]` (4) - eyedropper fills each tile on its word |
-| `prompt` | `text` (typed), `answer_label`, `answer`, `answer_at` |
+| `prompt` | brand-styled typed bar: `text`, `answer_label`, `answer`, `answer_at` |
+| `search` | **realistic Google search** (keeps Google's look, not the brand): `text` (typed per character with real keystroke sounds), `type_at`, `suggestions` (4 autocomplete rows), `results: [{site, url, title, snippet}]` (≤3), `highlight: {text, at}` (marker sweep on a phrase in a snippet). Cursor clicks the box, Enter shows results, camera pushes in. 4.5-6 s |
+| `chat` | **realistic AI chat app** (neutral, not the brand): `user` (typed question), `type_at`, `reply` (streams word by word), `reply_at`, `assistant` (name, default "AI Assistant"), `steps: [{text, at}]` (agent tasks ticking off on their spoken words) |
 | `timeline` | `ticks: ["NOW", "", "2030"]`, `tracks: [[{text, from, to, at, alt}]]` (from/to in %) |
+| `broll` | `query` (what to show, plain words: "busy customer support call centre"), `caption` (optional small tag), `why`. `broll.py` fills `src`/`credit`. 2.5-4.5 s |
 | `image` | `src` (path to the user's image/clip), `caption`, `full` (edge-to-edge) |
 | `quote` | `text`, `by` |
 | `comment` | `items: [{handle, text, at}]` |

@@ -16,13 +16,16 @@ A [Claude Code](https://claude.com/claude-code) skill by **Prof Tidjani**.
 | ✂️ **Cut** | Removes pauses, retakes, false starts and filler words (any language), with punch-in zooms to hide jump cuts |
 | 🎨 **Grade** | Matches *your* look: a reference video/link, your CapCut/VN/Lightroom preset (from one before/after still), your Premiere/Resolve `.cube` LUT, or a built-in look. Skin tones stay natural on every skin colour |
 | 🔤 **Captions** | Word-synced animated captions in your brand colours (3 styles) |
+| 🎞️ **B-roll** | Full-screen cutaway footage where the words name something visual - from your own clips or free public-domain video - no account needed. Credits saved automatically |
 | 📊 **Graphics** | Full-screen stat pages (counters, donuts, bars, lists, comparisons, sources), kinetic titles above your head, UI mockups (prompt bar, app delete, timeline, eyedropper), b-roll, quotes, comment CTAs - never over your face |
 | 🔁 **Endings** | Seamless loops, follow cards, comment-keyword CTAs, link cards |
 | 🎵 **Sound** | Voice cleanup, royalty-free music composed to fit (or your own track), synced sound effects, -14 LUFS |
 | 📱 **Formats** | 9:16, 16:9, 1:1, 4:5 - rendered straight at social-media size |
 
 The first time, it interviews you (brand colours, fonts, references, style, platforms) and saves a
-**profile**. Every video after that is one command plus a couple of quick choices.
+**profile**. Every video after that is one command plus a couple of quick choices - including a
+simple **yes/no for B-roll, animations and motion graphics**. Before the render you get a numbered
+list of every planned moment (with a B-roll thumbnail sheet) and can say no to any of them.
 
 ## Install
 1. **Requirements** (the doctor checks them all):
@@ -47,6 +50,12 @@ The first time, it interviews you (brand colours, fonts, references, style, plat
 | CapCut, VN, InShot, Lightroom mobile, Snapseed, VSCO | the **same frame exported twice**: without and with your preset - it learns the preset (≈2/255 error on unseen frames) |
 | Nothing yet | pick a look: bright-clean, bright-blue, natural, warm-film, golden-hour, soft-pastel, moody, mono |
 
+## B-roll
+Video only, no account needed: your own clips folder first, then free public-domain video
+(Wikimedia Commons). Moments without a good clip simply don't get B-roll. Optional: add a free
+Pexels/Pixabay key to your profile for stock video, or attach any clip (e.g. AI-generated) with
+`broll.py --assign`.
+
 ## Starter profiles
 `assets/profiles/` - **Bright Navy** (bright bluish educator), **Warm Film** (cinematic), **Bold Creator**
 (high-energy black + yellow). Use one as-is or as a starting point in the interview.
@@ -58,6 +67,8 @@ grade.py    → per-video 3D LUT: auto exposure + white balance, brand tint, ski
               closed-loop matching to your reference / preset / LUT
 cut.py      → cut + frame + punch-ins + grade + skin finish in ONE decode pass, cleaned voice
 build.py    → brand-driven HyperFrames composition from Claude's effect plan (beats.json)
+broll.py    → finds, frames and grades B-roll for the planned moments (own clips → stock → public domain)
+moments.py  → numbered approval list: say yes/no per moment or per family
 audio.py    → composed music (loops exactly when needed), synthesized SFX, ducked mix
 render.py   → preview frames for one approval, then a single render at social bitrate
 ```

@@ -149,24 +149,23 @@ def synth_sfx(work):
 
 
 def mix(work, events, music_db, lufs, loop):
+    """Voice + music ducked under the voice + one pre-rendered SFX track (any number of events)."""
+    import sfxlib
     voice = os.path.join(work, "voice.wav"); music = os.path.join(work, "music.wav")
     dur = float(json.load(open(os.path.join(work, "edl.json")))["duration"])
-    ins = ["-i", voice, "-i", music]
+    sfxlib.ensure_library()
+    trk = sfxlib.render_track(events, dur)
+    sfx_path = os.path.join(work, "sfx_track.wav")
+    w = wave.open(sfx_path, "wb"); w.setnchannels(2); w.setsampwidth(2); w.setframerate(sfxlib.SR)
+    w.writeframes((np.clip(trk, -1, 1) * 32767).astype(np.int16).tobytes()); w.close()
     fc = [f"[0:a]aresample=48000,aformat=channel_layouts=stereo,apad,atrim=0:{dur},asplit=2[v][key]",
           f"[1:a]aresample=48000,volume={music_db}dB[mus]",
-          "[mus][key]sidechaincompress=threshold=0.03:ratio=5:attack=25:release=400:makeup=1[duck]"]
-    lab = ["[v]", "[duck]"]
-    for i, e in enumerate(events):
-        ms = max(0, int(e["t"] * 1000))
-        ins += ["-i", os.path.join(work, "sfx", e["sfx"] + ".wav")]
-        fc.append(f"[{i + 2}:a]aresample=48000,volume={e.get('gain', -14)}dB,adelay={ms}|{ms}[s{i}]")
-        lab.append(f"[s{i}]")
-    fc.append("".join(lab) + f"amix=inputs={len(lab)}:normalize=0:duration=longest,atrim=0:{dur},"
-              f"loudnorm=I={lufs}:TP=-1.0:LRA=10[a]")
-    script = os.path.join(work, "mix_graph.txt"); open(script, "w").write(";".join(fc))
-    run([FFMPEG, "-v", "error", "-y", *ins, "-/filter_complex", script, "-map", "[a]", "-c:a", "pcm_s16le",
-         os.path.join(work, "final_audio.wav")])
-    log("mix ->", os.path.join(work, "final_audio.wav"))
+          "[mus][key]sidechaincompress=threshold=0.03:ratio=5:attack=25:release=400:makeup=1[duck]",
+          f"[2:a]aresample=48000,aformat=channel_layouts=stereo[fx]",
+          f"[v][duck][fx]amix=inputs=3:normalize=0:duration=longest,atrim=0:{dur},loudnorm=I={lufs}:TP=-1.0:LRA=10[a]"]
+    run([FFMPEG, "-v", "error", "-y", "-i", voice, "-i", music, "-i", sfx_path, "-filter_complex", ";".join(fc),
+         "-map", "[a]", "-c:a", "pcm_s16le", os.path.join(work, "final_audio.wav")])
+    log(f"mix -> {os.path.join(work, 'final_audio.wav')} ({len(events)} sound events)")
 
 
 def main():
@@ -179,8 +178,9 @@ def main():
     ap.add_argument("--events"); ap.add_argument("--music-db", type=float, default=-12)
     ap.add_argument("--lufs", type=float, default=-14)
     a = ap.parse_args()
-    if a.cmd == "sfx":
-        return synth_sfx(a.work)
+    if a.cmd == "sfx":  # fetch/refresh the CC0 sound library (cached once per machine)
+        import sfxlib
+        return log("sfx library ->", sfxlib.ensure_library())
     if a.cmd == "mix":
         ev = json.load(open(a.events)) if a.events and os.path.exists(a.events) else []
         return mix(a.work, ev, a.music_db, a.lufs, a.loop)

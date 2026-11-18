@@ -84,53 +84,128 @@ def custom_fonts(comp, files):
     return faces
 
 
+def _jit(i, seed):
+    """Deterministic 0..1 jitter (renders must be reproducible)."""
+    return ((i * 9301 + seed * 49297 + 233280) % 233280) / 233280.0
+
+
+def key_schedule(text, start, latest_end, seed=7):
+    """Human-like typing: ~13 chars/s, quicker inside words, small pauses after spaces/punctuation,
+    sped up if it would not finish by latest_end. Returns one time per character."""
+    gaps = []
+    for i, ch in enumerate(text):
+        g = 0.055 + 0.05 * _jit(i, seed)
+        if ch == " ":
+            g += 0.035
+        if i and text[i - 1] in ",.?!:;":
+            g += 0.16
+        gaps.append(g)
+    total = sum(gaps)
+    k = min(1.0, max(0.25, (latest_end - start) / total)) if total else 1.0
+    t, out = start, []
+    for g in gaps:
+        out.append(round(t, 3)); t += g * k
+    return out
+
+
+def prepare_typing(b):
+    """Fill b['_keys'] (+ derived times) for kinds that type text, so visuals and sounds share timing."""
+    k = b.get("kind")
+    if k == "search":
+        txt = b.get("text", "")
+        t0 = b.get("type_at", b["at"] + 0.75)
+        b["_keys"] = key_schedule(txt, t0, min(t0 + 2.8, b["until"] - 2.6))
+        b["_enter"] = round(b.get("enter_at", (b["_keys"][-1] if b["_keys"] else t0) + 0.35), 3)
+        b["_results"] = round(b["_enter"] + 0.4, 3)
+    elif k == "chat":
+        txt = b.get("user", "")
+        t0 = b.get("type_at", b["at"] + 0.5)
+        limit = (b["reply_at"] - 1.0) if b.get("reply_at") else min(t0 + 2.6, b["until"] - 2.2)
+        b["_keys"] = key_schedule(txt, t0, limit, seed=11)
+        b["_send"] = round((b["_keys"][-1] if b["_keys"] else t0) + 0.3, 3)
+        b["_reply"] = round(b.get("reply_at", b["_send"] + 0.9), 3)
+    elif k == "prompt":
+        txt = b.get("text", "")
+        t0 = b["at"] + 0.35
+        limit = (b["answer_at"] - 0.5) if b.get("answer_at") else b["until"] - 1.5
+        b["_keys"] = key_schedule(txt, t0, limit, seed=3)
+
+
 def sfx_events(beats, end):
     ev, breaks = [], []
-    add = lambda s, t, g: ev.append({"sfx": s, "t": round(max(0, t), 3), "gain": g}) if 0 <= t < end else None
-    for b in beats:
+
+    def add(s, t, g, var=0, pan=0.0):
+        if 0 <= t < end:
+            ev.append({"sfx": s, "t": round(max(0, t), 3), "gain": g, "var": var, "pan": pan})
+    wipe = 0
+    for bi, b in enumerate(beats):
         if b["type"] == "words":
             for i, L in enumerate(b["lines"]):
                 t = L.get("at", b["at"] + i * 0.3)
                 big = L.get("style", "big") in ("big", "box")
-                add("impact" if big and b.get("anim") in ("slam", "drop") else "pop", t, -14 if big else -18)
+                if big and b.get("anim") in ("slam", "drop"):
+                    add("impact", t, -15)
+                else:
+                    add("whoosh2" if big else "pop2", t - 0.03, -17 if big else -22)
                 if L.get("strike_at") is not None:
-                    add("click", L["strike_at"], -12)
+                    add("glitch", L["strike_at"], -16)
             continue
         k, at = b.get("kind"), b["at"]
         if k == "title":
-            add("impact", at, -12)
+            add("whoosh_deep", at - 0.15, -14); add("impact", at + 0.1, -13)
             if at > 3:
                 add("riser", at - 3.0, -24)
             breaks.append((at, b["until"] + 0.3))
         else:
-            add("whoosh", at - 0.05, -17)
-        if k in ("list", "pick", "bars", "converge"):
+            add("whoosh" if wipe % 2 == 0 else "whoosh2", at - 0.06, -16); wipe += 1
+        for j, t in enumerate(b.get("_keys", [])):  # one real keystroke per character
+            ch = (b.get("text") or b.get("user") or "")[j:j + 1]
+            add("key_space" if ch == " " else "key", t, -12 - 4 * _jit(j, bi), var=j * 7 + bi, pan=0.25 * (_jit(j, bi + 3) - 0.5))
+        if k == "search":
+            add("click", at + 0.55, -14)                       # cursor clicks into the box
+            add("key_enter", b["_enter"], -10); add("whoosh2", b["_results"] - 0.05, -18)
+            if b.get("highlight"):
+                add("ding", b["highlight"].get("at", b["_results"] + 1.0), -17)
+        if k == "chat":
+            add("click", b["_send"] - 0.02, -13); add("swoosh_up", b["_send"], -15)
+            add("notify", b["_reply"], -16)
+            for st in b.get("steps", []):
+                add("tick", st["at"], -14)
+            if b.get("steps"):
+                add("success", b["steps"][-1]["at"] + 0.4, -17)
+        if k in ("list", "bars", "converge"):
             for j, it in enumerate(b.get("items", [])):
-                t = it.get("at", at + 0.4 + j * 0.5)
-                add("click" if k == "pick" else "pop", t, -15)
+                add("pop" if j % 2 == 0 else "pop2", it.get("at", at + 0.4 + j * 0.5), -15)
+        if k == "pick":
+            for j, it in enumerate(b.get("items", [])):
+                add("click", it.get("at", at + 0.5 + j * 0.6), -13); add("pop2", it.get("at", at + 0.5 + j * 0.6) + 0.05, -20)
         if k in ("counter", "donut"):
-            add("ding", b.get("count_at", at + 0.3) + 1.0, -19)
+            c0, cd = b.get("count_at", at + 0.3), b.get("count_dur", 1.1)
+            for j in range(int(cd / 0.07)):  # ticks while the number counts up
+                add("tick", c0 + j * 0.07, -24 + 6 * j / max(1, cd / 0.07))
+            add("ding", c0 + cd, -16)
         if k == "compare":
-            if b.get("strike_at"):
-                add("impact", b["strike_at"], -13)
             add("pop", b.get("op_at", at + 0.8), -17)
+            if b.get("strike_at"):
+                add("glitch", b["strike_at"], -15); add("impact", b["strike_at"] + 0.03, -16)
+            if b.get("verdict"):
+                add("pop2", b.get("verdict_at", b.get("strike_at") or b["until"] - 0.8), -16)
         if k == "source":
-            add("pop", at + 1.0, -15)
+            add("pop", at + 1.0, -14); add("success", at + 1.15, -19)
         if k == "apps":
             d = b.get("delete_at", b["until"] - 1.4)
             for j in range(len(b.get("items", []))):
-                add("click", d + j * 0.16, -12)
+                add("pop2", d + j * 0.16, -13)
         if k == "converge":
-            add("ding", b.get("target_at", at + 1.3), -18)
+            add("success", b.get("target_at", at + 1.3), -17)
         if k == "comment":
             for j, it in enumerate(b.get("items", [{}])):
-                add("ding", it.get("at", at + 0.3 + j * 0.6), -18)
-        if k == "prompt":
-            n = min(18, len(b.get("text", "")) // 3)
-            for j in range(n):
-                add("click", at + 0.35 + j * 0.12, -22)
-            if b.get("answer"):
-                add("pop", b.get("answer_at", at + 1.5), -16)
+                add("notify", it.get("at", at + 0.3 + j * 0.6), -16)
+        if k == "prompt" and b.get("answer"):
+            add("key_enter", b["_keys"][-1] + 0.2 if b.get("_keys") else at + 1.2, -11)
+            add("notify", b.get("answer_at", at + 1.5), -16)
+        if k == "broll":
+            add("whoosh2", at - 0.06, -18)
     return sorted(ev, key=lambda e: e["t"]), breaks
 
 
@@ -140,6 +215,15 @@ def main():
     ap.add_argument("--beats", required=True)
     a = ap.parse_args()
     prof = load_json(a.profile); plan = load_json(a.beats)
+    # the owner's yes/no answers: whole families can be off, single moments can be skipped
+    on = {"broll": True, "animations": True, "graphics": True}
+    on.update({k: bool(v) for k, v in (prof.get("edit", {}).get("include") or {}).items()})
+    on.update({k: bool(v) for k, v in (plan.get("include") or {}).items()})
+    fam = lambda b: "animations" if b["type"] == "words" else ("broll" if b.get("kind") == "broll" else "graphics")
+    plan["beats"] = [b for b in plan["beats"] if not b.get("skip") and on[fam(b)]
+                     and not (b.get("kind") == "broll" and not b.get("src"))]
+    for b in plan["beats"]:
+        prepare_typing(b)
     edl = load_json(os.path.join(a.work, "edl.json")); words = load_json(os.path.join(a.work, "words_cut.json"), [])
     W, H = FORMATS[edl["format"]]; u = min(W, H) / 1080; END = edl["duration"]; portrait = H > W
     comp = os.path.join(a.work, "comp"); os.makedirs(comp, exist_ok=True)
@@ -154,7 +238,8 @@ def main():
     shades = [primary, mix(primary, "#ffffff", 0.15), mix(primary, "#ffffff", 0.3), mix(primary, "#ffffff", 0.45)]
     f = prof.get("fonts", {})
     display, serif, mono = f.get("display", "Inter"), f.get("serif", "Cormorant Garamond"), f.get("mono", "JetBrains Mono")
-    faces = install_fonts_and_gsap(comp, [x for x in {display, serif, mono} if x])
+    # Roboto + Poppins power the realistic search / chat mockups (they imitate real apps, not the brand)
+    faces = install_fonts_and_gsap(comp, [x for x in {display, serif, mono, "Roboto", "Poppins"} if x])
     faces += custom_fonts(comp, f.get("files"))
     if (f.get("files") or {}).get("display"): display = "BrandDisplay"
     if (f.get("files") or {}).get("serif"): serif = "BrandSerif"
@@ -175,19 +260,29 @@ def main():
             "captions": {"style": cap.get("style", "bold-box"), "case": cap.get("case", "upper"),
                          "max_words": cap.get("max_words", 3), "max_chars": cap.get("max_chars", 17 if portrait else 28)},
             "shades": shades, "beats": plan["beats"], "words": words}
-    data_js = "window.REEL=" + json.dumps(data, ensure_ascii=False).replace("</", "<\/") + ";"
+    data_js = "window.REEL=" + json.dumps(data, ensure_ascii=False).replace("</", r"<\/") + ";"
     runtime_js = open(os.path.join(RUNTIME, "reel.js"), encoding="utf-8").read()
-    shutil.copy(os.path.join(RUNTIME, "reel.css"), os.path.join(comp, "reel.css"))
+    for css in ("reel.css", "reel-ui.css"):
+        shutil.copy(os.path.join(RUNTIME, css), os.path.join(comp, css))
     shutil.copy(os.path.join(a.work, "cut.mp4"), os.path.join(comp, "base.mp4"))
-    for b in plan["beats"]:  # copy b-roll media next to the composition
-        if b.get("kind") == "image" and b.get("src") and os.path.exists(b["src"]):
-            dst = os.path.basename(b["src"]); shutil.copy(b["src"], os.path.join(comp, dst)); b["src"] = dst
+    for b in plan["beats"]:  # copy b-roll / image media next to the composition
+        if b.get("kind") in ("image", "broll") and b.get("src"):
+            srcp = b["src"] if os.path.isabs(b["src"]) else os.path.join(a.work, b["src"])
+            if os.path.exists(srcp):
+                os.makedirs(os.path.join(comp, "media"), exist_ok=True)
+                dst = "media/" + os.path.basename(srcp); shutil.copy(srcp, os.path.join(comp, dst)); b["src"] = dst
 
     clips = []
     for i, b in enumerate(plan["beats"]):
         until = min(b["until"], END)
         track = 3 if b["type"] == "page" else 2
         cls = "fx clip " + ("page" if b["type"] == "page" else "words")
+        if b.get("kind") == "broll":
+            # real video layer the renderer decodes: its own id, inside an UNTIMED wrapper (a timed parent
+            # would offset its frames); the wrapper carries the wipe + push-in, the beat div the label
+            clips.append(f'<div id="bw{i}" class="bwrap"><video id="bv{i}" class="bv" src="{b["src"]}" muted playsinline '
+                         f'data-has-audio="false" data-start="{b["at"]:.4f}" data-duration="{until - b["at"]:.4f}" '
+                         f'data-track-index="{10 + i}"></video></div>')
         clips.append(f'<div id="b{i}" class="{cls}" data-start="{b["at"]:.4f}" data-duration="{until - b["at"]:.4f}" data-track-index="{track}"></div>')
     root = f""":root{{--W:{W}px;--H:{H}px;--u:{u}px;--primary:{primary};--on-primary:{on_primary};--page-bg:{page_bg};--ink:{ink};--wall-ink:{wall_ink};--hi:{hi};
 --primary-90:{rgba(primary, .9)};--primary-35:{rgba(primary, .35)};--primary-20:{rgba(primary, .2)};
@@ -195,7 +290,7 @@ def main():
 --font-display:"{display}";--font-serif:"{serif}";--font-mono:"{mono}";--page-top:{(0.11 if portrait else 0.08) * H:.0f}px;--page-bottom:{(0.22 if portrait else 0.18) * H:.0f}px}}"""
     html = f"""<!doctype html>
 <html lang="{prof.get('language', 'en')}"><head><meta charset="utf-8">
-<style>{''.join(faces)}</style><style>{root}</style><link rel="stylesheet" href="reel.css">
+<style>{''.join(faces)}</style><style>{root}</style><link rel="stylesheet" href="reel.css"><link rel="stylesheet" href="reel-ui.css">
 <style>html,body{{font-family:"{display}","Inter",sans-serif}}</style></head>
 <body><div id="stage" data-composition-id="reel" data-start="0" data-duration="{END:.4f}" data-fps="{edl['fps']}" data-width="{W}" data-height="{H}">
 <div id="vwrap"><video id="base" src="base.mp4" playsinline muted data-has-audio="false" data-start="0" data-duration="{END:.4f}" data-track-index="0"></video></div>

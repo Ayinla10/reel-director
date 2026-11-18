@@ -28,16 +28,33 @@ feedback - follow the reasoning, not just the letter.
 | Several groups chasing one thing | `converge` page |
 | Things becoming obsolete / deleted | `apps` page (jiggle + delete) |
 | "Build for / focus on / pick" choices | `pick` page (eyedropper samples each) |
+| Looking something up, citing a stat/source ("Databricks found...") | `search` page: real-looking Google search, highlight the number |
+| Asking an AI / chatbot behaviour / an agent doing tasks | `chat` page (typed question, streamed reply, `steps` for agents) |
 | A question the audience would ask | `prompt` page (typed bar + answer) |
 | Before/after, now vs future, roadmap | `timeline` page |
 | A pivot ("But here's the thing") | `title` page, 1.5-2 s, full primary colour |
 | Punchline / one-word verdict | `words` beat with `anim: "slam"` and a boxed word |
 | Quote from someone | `quote` page |
 | Call to action | `comment` page (bubbles with the keyword) or `words` beat |
-| B-roll the user supplied | `image` page (`full: true` for edge-to-edge) |
+| A concrete, visual noun or scene ("customer service", "a market in Lagos", "data centre") | `broll` beat, 2.5-4.5 s, `query` = plain description of the shot |
+| A still image the user supplied | `image` page (`full: true` for edge-to-edge) |
 
 Don't invent facts, sources or numbers the speaker didn't say. Short labels (2-5 words) beat
 sentences; the voice carries the detail.
+
+## Realistic UI moments
+`search` and `chat` imitate real apps on purpose - viewers recognise them instantly, so they keep the
+real apps' look instead of the brand colours. Write `text`/`user` the way a person would actually
+type it (lowercase search queries, natural questions). Never put words in a real company's mouth:
+result titles/snippets restate what the speaker said, with neutral site names for anything else.
+
+## B-roll: when it helps
+B-roll earns its place when the words name something people can *see* and the speaker's face adds
+nothing for those seconds: examples, places, products, "imagine..." scenes, lists of concrete things.
+Avoid it for opinions, emotions, punchlines and calls to action - that's when the face matters most.
+B-roll is always **video** (photos look like a slideshow). Write `query` like a stock-footage search ("woman typing on laptop at night", "phone notifications",
+"robot arm assembly line"): 3-6 plain words, no brand names. Keep 1 cutaway per ~15-25 s; never two
+cutaways back-to-back without the speaker in between. Captions stay on during B-roll.
 
 ## Pacing
 - Moderate: one page or title every ~8-12 s, words beats in between; nothing for the first 0.5 s of

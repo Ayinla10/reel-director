@@ -18,6 +18,12 @@
       "prompt": "Voici ma vidéo (en français) D:\\videos\\conseil.mov. J'utilise un preset CapCut, je t'envoie avant.png et apres.png. Fais un Reel propre avec sous-titres.",
       "expected_output": "Transcribes in French, uses the before/after pair to learn the CapCut preset (method pair), French captions, conversation in French, renders a 9:16 Reel.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "edit D:/talks/agents.mov for my profile, 9:16, tight cut, loop. yes to b-roll and motion graphics but NO animations. I have my own clips in D:/broll.",
+      "expected_output": "Per-video round with the extras question; plans broll + page beats only (no words beats, zoom none), fetches B-roll from D:/broll first, shows the numbered moments list and broll sheet for approval, renders 9:16.",
+      "files": []
     }
   ]
 }

@@ -41,9 +41,12 @@ Explain briefly that the skill can copy a look exactly. Options:
    spoken word in colour)", "Simple subtitles", "No captions". Also case: UPPERCASE or Sentence.
 2. **Graphics density** - moderate (default: a page/title every ~10 s), minimal (only the key
    numbers), rich (every point gets a visual, but face still on screen ≥50%).
-3. **Effect families** they like (multi-select): stat pages, kinetic words, UI mockups (prompt bar,
-   apps, file drop, timeline, eyedropper), b-roll/images, comment bubbles.
-4. **Punch-in zooms** on cuts (yes default / no) and **pacing** of cuts (tight default).
+3. **Extras - default yes/no for each** (multi-select, ticked = yes): **B-roll** (full-screen cutaway
+   footage where it helps), **Animations** (kinetic words above the head, punch-in zooms,
+   transitions), **Motion graphics** (full-screen stat pages, charts, lists, UI mockups). Saved as
+   `edit.include`; asked again per video with these pre-ticked.
+4. **Own B-roll clips?** (only if B-roll is on) - optional folder of their own footage (always
+   preferred). Otherwise the skill uses free public-domain video automatically - no key, no account.
 
 ## Round 4 - Goal & platform defaults
 1. **Main platforms** (multi-select): TikTok, Instagram Reels, YouTube Shorts, YouTube long-form,
@@ -60,7 +63,8 @@ Save the profile (`references/profile.md`), then show a one-paragraph summary of
 Ask in ONE round:
 1. **Format(s)** - 9:16 / 16:9 / 1:1 / 4:5 / several (multi-select; recommend 9:16 for phones).
 2. **Cut** - tight (pauses, retakes, fillers out) / light (only obvious mistakes) / none.
-3. **Ending** - profile default pre-selected; offer the others.
-4. **Anything special?** - free text: topic/goal, numbers or sources to visualise, b-roll images
-   or clips to include, a music track for this one, a CTA keyword.
+3. **Ending** - profile default pre-selected; offer the others (keyword/URL via "Other").
+4. **Extras** - multi-select, ticked = yes: B-roll / Animations / Motion graphics, with the
+   profile's `edit.include` as the recommendation. Untick = that family is not used at all.
+Anything else (numbers to show, own b-roll clips, a music track) the user can add as free text.
 If the user says "just do it" / "same as last time", skip the round and use profile defaults.

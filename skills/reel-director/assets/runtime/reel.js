@@ -87,11 +87,12 @@
       const t = L.at != null ? L.at : b.at + i * 0.3;
       if (b.anim === "drop") tl.fromTo($$(".ch", ln), { y: -R.H * 0.5 }, { y: 0, duration: 0.6, ease: "bounce.out", stagger: 0.045 }, q(t));
       else if (b.anim === "slam") tl.fromTo(ln, { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.22, ease: "power4.out" }, q(t));
-      else tl.fromTo($(".mask > span", ln), { yPercent: 150 }, { yPercent: 0, duration: 0.42, ease: "power4.out" }, q(t));
+      // opacity too: italic overhangs can peek past the mask, and a stray pixel on frame 1 shows on every loop
+      else tl.fromTo($(".mask > span", ln), { yPercent: 150, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.42, ease: "power4.out" }, q(t));
       if (L.strike_at != null) tl.to($(".strike", ln), { width: "100%", duration: 0.32, ease: "power3.inOut" }, q(L.strike_at));
       if (L.out_at != null) tl.to(ln, { opacity: 0, y: -20 * U, duration: 0.25, ease: "power2.in" }, q(L.out_at));
     });
-    if (b.role === "loop") tl.to($$(".mask > span", stack), { yPercent: -150, duration: 0.18, ease: "power3.in" }, q(END - 0.2));
+    if (b.role === "loop") tl.to($$(".mask > span", stack), { yPercent: -150, opacity: 0, duration: 0.18, ease: "power3.in" }, q(END - 0.2));
     else tl.to(stack, { opacity: 0, y: -24 * U, duration: 0.22, ease: "power2.in" }, q(b.until - 0.24));
   }
 
@@ -201,9 +202,10 @@
     c.innerHTML = `<div class="bar"><div class="txt"><span class="t"></span><span class="cur"></span></div><div class="go"><svg width="40%" viewBox="0 0 40 40"><path d="M20 32V9M10 18l10-10 10 10" fill="none" stroke="var(--on-primary)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
       ${b.answer ? `<div class="ans"><div class="l">${esc(b.answer_label || "ANSWER")}</div><div class="v">${esc(b.answer)}</div></div>` : ""}`;
     tl.fromTo($(".bar", c), { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.8)" }, q(b.at + 0.1));
-    const T = b.text || "", tx = $(".t", c), o = { n: 0 }, dur = Math.min(2.2, T.length * 0.05);
-    tl.to(o, { n: T.length, duration: dur, ease: "none", onUpdate: () => (tx.textContent = T.slice(0, Math.round(o.n))) }, q(b.at + 0.35));
-    tl.to($(".go", c), { scale: 0.85, duration: 0.08, yoyo: true, repeat: 1 }, q(b.at + 0.4 + dur));
+    const T = b.text || "", keys = b._keys || [];
+    typeInto($(".t", c), T, keys);
+    const done = keys.length ? keys[keys.length - 1] : b.at + 0.5, dur = done - b.at - 0.4;
+    tl.to($(".go", c), { scale: 0.85, duration: 0.08, yoyo: true, repeat: 1 }, q(done + 0.2));
     if (b.answer) tl.fromTo($(".ans", c), { opacity: 0, y: -20 * U }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, q(b.answer_at || b.at + 0.7 + dur));
   };
   K.timeline = (b, c) => {
@@ -222,6 +224,138 @@
     const isVid = /\.(mp4|mov|webm)$/i.test(b.src || "");
     c.innerHTML = `<div class="media">${isVid ? `<video src="${esc(b.src)}" muted playsinline></video>` : `<img src="${esc(b.src)}" alt="">`}</div>${b.caption ? `<div class="sub">${esc(b.caption)}</div>` : ""}`;
     tl.fromTo($(".media > *", c), { scale: 1.12 }, { scale: 1, duration: Math.max(1, b.until - b.at), ease: "none" }, q(b.at));
+  };
+  K.broll = (b, c, root) => {
+    // the <video> is a static layer written by build.py in an untimed wrapper #bw<i>; it gets the same
+    // wipe as every page, a slow push-in, and an optional label on the (transparent) beat div
+    root.classList.remove("dots");
+    const wrap = document.getElementById("bw" + root.id.slice(1));
+    if (wrap) {
+      tl.set(wrap, { clipPath: "inset(0 0 0 100%)" }, 0);
+      tl.fromTo(wrap, { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: 0.32, ease: "power4.out" }, q(b.at));
+      tl.to(wrap, { clipPath: "inset(0 100% 0 0)", duration: 0.28, ease: "power3.in" }, q(b.until - 0.28));
+      tl.fromTo($(".bv", wrap), { scale: 1.0 }, { scale: 1.06, duration: Math.max(1, b.until - b.at), ease: "none" }, q(b.at));
+    }
+    if (b.caption) {
+      const tag = el("div", "btag mono", esc(b.caption)); root.appendChild(tag);
+      tl.fromTo(tag, { opacity: 0, y: -16 * U }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, q(b.at + 0.35));
+    }
+  };
+  /* ---------- shared: real typing driven by build.py's per-character key times ---------- */
+  function typeInto(node, text, keys, onChange) {
+    if (!keys || !keys.length) { node.textContent = text; return; }
+    const o = { p: 0 };
+    let last = -1;
+    tl.to(o, { p: 1, duration: Math.max(0.05, keys[keys.length - 1] - keys[0] + 0.05), ease: "none", onUpdate: () => {
+      const t = tl.time(); let n = 0;
+      while (n < keys.length && keys[n] <= t + 1e-4) n++;
+      if (n !== last) { last = n; node.textContent = text.slice(0, n); if (onChange) onChange(n); }
+    } }, q(keys[0]));
+  }
+  function blink(caret, from, to) {  // finite, seek-safe caret blink
+    const n = Math.max(1, Math.floor((to - from) / 0.5));
+    tl.fromTo(caret, { opacity: 1 }, { opacity: 0, duration: 0.25, ease: "steps(1)", yoyo: true, repeat: n * 2 - 1 }, q(from));
+  }
+  const CURSOR = '<svg class="cursor" viewBox="0 0 24 24"><path d="M4 2 L4 19 L8.6 14.8 L11.6 21.6 L14.4 20.4 L11.4 13.6 L17.6 13.6 Z" fill="#111" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+  const pos = (elm, root, fx, fy) => { const r = elm.getBoundingClientRect(), rr = root.getBoundingClientRect(); return { x: r.left - rr.left + r.width * fx, y: r.top - rr.top + r.height * fy }; };
+  const GLOGO = '<span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span>';
+  const MAG = '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="#9aa0a6" stroke-width="2.2"/><path d="M15.5 15.5 L21 21" stroke="#9aa0a6" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  const MIC = '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="#4285F4"/><path d="M6 11a6 6 0 0 0 12 0" fill="none" stroke="#34A853" stroke-width="2"/><path d="M12 17v4" stroke="#EA4335" stroke-width="2"/><path d="M9 21h6" stroke="#FBBC05" stroke-width="2"/></svg>';
+
+  /* ---------- Google-style search: cursor, real typing, autocomplete, results, highlight ---------- */
+  K.search = (b, c, root) => {
+    root.classList.remove("dots");
+    const text = b.text || "", keys = b._keys || [];
+    const sugg = (b.suggestions || [text, text + " 2026", text + " statistics", text + " explained"]).slice(0, 4);
+    const res = b.results || [{ site: "Wikipedia", url: "en.wikipedia.org", title: text.replace(/^./, (m) => m.toUpperCase()), snippet: text }];
+    root.insertAdjacentHTML("afterbegin", '<div class="ui-bg"><i class="a"></i><i class="b"></i><i class="c"></i></div>');
+    c.style.display = "none";
+    const win = el("div", "sx-win");
+    win.innerHTML = `<div class="sx-bar"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span>
+        <div class="sx-url"><svg width="1em" height="1em" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" fill="#5f6368"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#5f6368" stroke-width="2"/></svg>google.com</div></div>
+      <div class="sx-body"><div class="sx-home"><div class="sx-logo">${GLOGO}</div>
+        <div class="sx-box">${MAG}<div class="sx-q"><span class="t"></span><i class="caret"></i></div>${MIC}</div>
+        <div class="sx-sugg">${sugg.map(() => `<div class="row">${MAG}<span></span></div>`).join("")}</div></div>
+        <div class="sx-res"><div class="hd"><div class="lg">${GLOGO}</div><div class="pill">${esc(text)}</div></div>
+          <div class="tabs"><span class="on">All</span><span>News</span><span>Images</span><span>Videos</span><span>More</span></div>
+          ${res.slice(0, 3).map((r) => `<div class="card"><div class="site"><div class="fav">${esc((r.site || "?")[0])}</div><div><div>${esc(r.site || "")}</div><div class="url">${esc(r.url || "")}</div></div></div>
+            <div class="tt">${esc(r.title || "")}</div><div class="sn">${esc(r.snippet || "")}</div></div>`).join("")}</div></div>`;
+    root.appendChild(win);
+    if (b.highlight && b.highlight.text) {  // wrap the phrase to highlight in the first matching snippet
+      const sn = $$(".sn", win).find((s) => s.textContent.includes(b.highlight.text));
+      if (sn) sn.innerHTML = esc(sn.textContent).replace(esc(b.highlight.text), `<mark>${esc(b.highlight.text)}</mark>`);
+    }
+    root.insertAdjacentHTML("beforeend", CURSOR);
+    const cur = $(".cursor", root), box = $(".sx-box", win), rows = $$(".sx-sugg .row span", win), dd = $(".sx-sugg", win);
+    // camera: window rises in, slow push while typing
+    tl.fromTo(win, { y: 80 * U, scale: 0.92, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "power3.out" }, q(b.at + 0.05));
+    tl.to(win, { scale: 1.05, duration: Math.max(0.5, b._enter - b.at - 0.5), ease: "sine.inOut" }, q(b.at + 0.5));
+    // cursor glides to the box and clicks
+    const p0 = pos(box, root, 0.55, 0.5);
+    tl.fromTo(cur, { x: R.W * 0.9, y: R.H * 0.9, opacity: 0 }, { x: p0.x, y: p0.y, opacity: 1, duration: 0.5, ease: "power2.inOut" }, q(b.at + 0.1));
+    tl.to(cur, { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1 }, q(b.at + 0.55));
+    tl.to(box, { boxShadow: "0 2px 14px rgba(26,115,232,0.45)", duration: 0.2 }, q(b.at + 0.55));
+    tl.to(cur, { opacity: 0, duration: 0.25 }, q(b.at + 0.8));
+    // typing + live autocomplete (completion in bold, like the real thing)
+    blink($(".caret", win), b.at + 0.55, keys.length ? keys[0] : b.at + 0.8);
+    typeInto($(".sx-q .t", win), text, keys, (n) => {
+      const typed = text.slice(0, n);
+      dd.style.opacity = n >= 3 ? 1 : 0;
+      rows.forEach((r, i) => {
+        const s = sugg[i] || "";
+        r.innerHTML = s.toLowerCase().startsWith(typed.toLowerCase()) ? esc(s.slice(0, n)) + "<b>" + esc(s.slice(n)) + "</b>" : "<b>" + esc(s) + "</b>";
+      });
+    });
+    // Enter: home page out, results in, camera pushes toward the top result
+    tl.to($(".sx-home", win), { opacity: 0, y: -40 * U, duration: 0.25, ease: "power2.in" }, q(b._enter));
+    tl.fromTo($(".sx-res", win), { opacity: 0 }, { opacity: 1, duration: 0.25 }, q(b._results));
+    tl.fromTo($$(".sx-res .card", win), { opacity: 0, y: 30 * U }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out", stagger: 0.12 }, q(b._results + 0.1));
+    tl.to(win, { scale: 1.16, duration: Math.max(0.6, b.until - b._results - 0.4), ease: "sine.inOut" }, q(b._results + 0.3));
+    if (b.highlight && $("mark", win)) tl.to($("mark", win), { backgroundSize: "100% 100%", duration: 0.45, ease: "power2.out" }, q(b.highlight.at || b._results + 1.0));
+  };
+
+  /* ---------- AI chat app: type the question, send, typing dots, streamed reply / agent steps ---------- */
+  const CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  K.chat = (b, c, root) => {
+    root.classList.remove("dots");
+    c.style.display = "none";
+    root.insertAdjacentHTML("afterbegin", '<div class="ui-bg"><i class="a"></i><i class="b"></i><i class="c"></i></div>');
+    const app = el("div", "ch-app");
+    const words = (b.reply || "").split(/\s+/).filter(Boolean);
+    app.innerHTML = `<div class="ch-hd"><div class="ch-av"><svg viewBox="0 0 24 24"><path d="M12 2l2.2 6.3L20 10l-5.8 1.7L12 18l-2.2-6.3L4 10l5.8-1.7z" fill="#fff"/></svg></div>
+        <div><div class="ch-name">${esc(b.assistant || "AI Assistant")}</div><div class="ch-st">● online</div></div></div>
+      <div class="ch-msgs"><div class="ch-u">${esc(b.user || "")}</div>
+        <div class="ch-a"><div class="ch-dots"><i></i><i></i><i></i></div><div class="ch-txt">${words.map((w) => `<span style="opacity:0">${esc(w)} </span>`).join("")}</div>
+          ${(b.steps || []).map((s) => `<div class="ch-step"><div class="s">${CHECK}</div><span>${esc(s.text)}</span></div>`).join("")}</div></div>
+      <div class="ch-in"><div class="ch-field"><span class="ph">Message ${esc(b.assistant || "AI Assistant")}...</span><span class="t"></span><i class="caret"></i></div>
+        <div class="ch-send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`;
+    root.appendChild(app);
+    root.insertAdjacentHTML("beforeend", CURSOR);
+    const keys = b._keys || [], field = $(".ch-field .t", app), ph = $(".ch-field .ph", app), cur = $(".cursor", root);
+    tl.fromTo(app, { y: 80 * U, scale: 0.94, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "power3.out" }, q(b.at + 0.05));
+    if (keys.length) tl.set(ph, { display: "none" }, q(keys[0]));
+    blink($(".ch-field .caret", app), b.at + 0.3, b._send);
+    typeInto(field, b.user || "", keys);
+    // the cursor arrives just in time to press send
+    const ps = pos($(".ch-send", app), root, 0.5, 0.55);
+    tl.fromTo(cur, { x: R.W * 0.9, y: R.H * 0.95, opacity: 0 }, { x: ps.x, y: ps.y, opacity: 1, duration: 0.45, ease: "power2.inOut" }, q(b._send - 0.5));
+    tl.to(cur, { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1 }, q(b._send - 0.04));
+    tl.to(cur, { opacity: 0, duration: 0.25 }, q(b._send + 0.35));
+    tl.set(field, { textContent: "" }, q(b._send));
+    tl.fromTo($(".ch-u", app), { opacity: 0, y: 60 * U, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, q(b._send));
+    // assistant is typing...
+    tl.fromTo($(".ch-a", app), { opacity: 0, y: 20 * U }, { opacity: 1, y: 0, duration: 0.3 }, q(b._send + 0.25));
+    const dotsN = Math.max(1, Math.floor((b._reply - b._send - 0.25) / 0.45));
+    tl.fromTo($$(".ch-dots i", app), { y: 0 }, { y: -8 * U, duration: 0.15, yoyo: true, repeat: dotsN * 2 - 1, stagger: 0.1, ease: "sine.inOut" }, q(b._send + 0.3));
+    tl.set($(".ch-dots", app), { display: "none" }, q(b._reply));
+    $$(".ch-txt span", app).forEach((s, i) => tl.to(s, { opacity: 1, duration: 0.08 }, q(b._reply + i * 0.06)));
+    $$(".ch-step", app).forEach((st, i) => {
+      const t = b.steps[i].at;
+      tl.fromTo(st, { opacity: 0, x: -20 * U }, { opacity: 1, x: 0, duration: 0.25 }, q(Math.max(b._reply, t - 0.5)));
+      tl.to($(".s", st), { rotate: 360, duration: 0.5, ease: "none" }, q(Math.max(b._reply, t - 0.5)));
+      tl.to($(".s", st), { borderColor: "#16a34a", backgroundColor: "#16a34a", duration: 0.15 }, q(t));
+      tl.to($(".s svg", st), { opacity: 1, duration: 0.15 }, q(t));
+    });
   };
   K.quote = (b, c) => {
     c.innerHTML = `<div class="q serif">“${esc(b.text)}”</div>${b.by ? `<div class="by">${esc(b.by)}</div>` : ""}`;
@@ -250,7 +384,11 @@
   /* ---------------- build all beats ---------------- */
   R.beats.forEach((b, i) => {
     const root = document.getElementById("b" + i);
-    if (b.type === "page") { page(b, i, root); pageRanges.push([b.at, b.until]); if (b.kind === "title" || b.hide_captions) hide.push([b.at, b.until]); }
+    if (b.type === "page") {
+      page(b, i, root);
+      if (b.kind !== "broll") pageRanges.push([b.at, b.until]);  // over footage, captions keep their normal style
+      if (b.kind === "title" || b.hide_captions) hide.push([b.at, b.until]);
+    }
     else { words(b, root); if (b.hide_captions !== false) hide.push([b.at, b.until]); }
   });
 

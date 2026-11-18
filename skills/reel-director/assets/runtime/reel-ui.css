@@ -1,0 +1,61 @@
+/* Realistic UI mockups. They imitate real apps on purpose (Google search, a chat assistant),
+   so they keep those apps' own look instead of the brand colours. */
+.page.search, .page.chat { background: #eef1f6; }
+.ui-bg { position: absolute; inset: 0; overflow: hidden; }
+.ui-bg i { position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%; filter: blur(calc(90 * var(--u))); opacity: 0.55; }
+.ui-bg .a { left: -20%; top: -10%; background: #c7d7fe; }
+.ui-bg .b { right: -25%; bottom: -5%; background: #fde2c8; }
+.ui-bg .c { left: 30%; top: 40%; width: 45%; background: #d9f2e4; }
+.cursor { position: absolute; left: 0; top: 0; width: calc(58 * var(--u)); height: calc(58 * var(--u)); z-index: 9; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35)); }
+
+/* Google-style search */
+.sx-win { position: absolute; left: 5%; right: 5%; top: 16%; bottom: 26%; background: #fff; border-radius: calc(30 * var(--u)); box-shadow: 0 calc(40 * var(--u)) calc(90 * var(--u)) rgba(32, 33, 36, 0.22); overflow: hidden; transform-origin: 50% 30%; font-family: "Roboto", Arial, sans-serif; color: #202124; }
+.sx-bar { height: calc(70 * var(--u)); background: #f1f3f4; display: flex; align-items: center; gap: calc(12 * var(--u)); padding: 0 calc(26 * var(--u)); }
+.sx-bar .d { width: calc(16 * var(--u)); height: calc(16 * var(--u)); border-radius: 50%; }
+.sx-url { flex: 1; margin-left: calc(14 * var(--u)); height: calc(42 * var(--u)); border-radius: calc(21 * var(--u)); background: #fff; display: flex; align-items: center; gap: calc(10 * var(--u)); padding: 0 calc(20 * var(--u)); font-size: calc(26 * var(--u)); color: #5f6368; }
+.sx-body { position: absolute; left: 0; right: 0; top: calc(70 * var(--u)); bottom: 0; }
+.sx-home { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 14%; }
+.sx-logo { font-family: "Poppins", "Roboto", sans-serif; font-weight: 500; font-size: calc(132 * var(--u)); letter-spacing: -0.02em; line-height: 1; margin-bottom: calc(50 * var(--u)); }
+.sx-box { width: 88%; min-height: calc(96 * var(--u)); border-radius: calc(48 * var(--u)); border: 1px solid #dfe1e5; box-shadow: 0 2px 8px rgba(32, 33, 36, 0.18); display: flex; align-items: center; gap: calc(20 * var(--u)); padding: 0 calc(30 * var(--u)); background: #fff; position: relative; z-index: 2; }
+.sx-box svg { width: calc(36 * var(--u)); height: calc(36 * var(--u)); flex: none; }
+.sx-q { flex: 1; font-size: calc(42 * var(--u)); line-height: 1.3; padding: calc(18 * var(--u)) 0; word-break: break-word; }
+.caret { display: inline-block; width: calc(3 * var(--u)); height: 1.1em; background: #1a73e8; vertical-align: text-bottom; margin-left: 1px; }
+.sx-sugg { width: 88%; margin-top: calc(-30 * var(--u)); padding-top: calc(36 * var(--u)); background: #fff; border-radius: 0 0 calc(30 * var(--u)) calc(30 * var(--u)); box-shadow: 0 6px 12px rgba(32, 33, 36, 0.18); overflow: hidden; opacity: 0; }
+.sx-sugg .row { display: flex; align-items: center; gap: calc(22 * var(--u)); padding: calc(14 * var(--u)) calc(30 * var(--u)); font-size: calc(38 * var(--u)); color: #202124; }
+.sx-sugg .row svg { width: calc(30 * var(--u)); height: calc(30 * var(--u)); flex: none; }
+.sx-sugg .row b { font-weight: 700; }
+.sx-res { position: absolute; inset: 0; opacity: 0; padding: calc(26 * var(--u)) calc(36 * var(--u)); transform-origin: 50% 20%; }
+.sx-res .hd { display: flex; align-items: center; gap: calc(22 * var(--u)); }
+.sx-res .lg { font-family: "Poppins", sans-serif; font-weight: 500; font-size: calc(46 * var(--u)); }
+.sx-res .pill { flex: 1; border-radius: calc(30 * var(--u)); box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28); padding: calc(14 * var(--u)) calc(26 * var(--u)); font-size: calc(30 * var(--u)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sx-res .tabs { display: flex; gap: calc(34 * var(--u)); margin: calc(26 * var(--u)) 0 calc(10 * var(--u)); font-size: calc(28 * var(--u)); color: #5f6368; border-bottom: 1px solid #ebebeb; }
+.sx-res .tabs span { padding-bottom: calc(12 * var(--u)); }
+.sx-res .tabs .on { color: #1a73e8; border-bottom: calc(4 * var(--u)) solid #1a73e8; }
+.sx-res .card { padding: calc(22 * var(--u)) 0; opacity: 0; }
+.sx-res .site { display: flex; align-items: center; gap: calc(14 * var(--u)); font-size: calc(27 * var(--u)); color: #202124; }
+.sx-res .fav { width: calc(40 * var(--u)); height: calc(40 * var(--u)); border-radius: 50%; background: #e8eaed; display: grid; place-items: center; font-weight: 700; font-size: calc(20 * var(--u)); color: #5f6368; }
+.sx-res .url { font-size: calc(24 * var(--u)); color: #4d5156; }
+.sx-res .tt { margin-top: calc(10 * var(--u)); font-size: calc(44 * var(--u)); color: #1a0dab; line-height: 1.25; }
+.sx-res .sn { margin-top: calc(8 * var(--u)); font-size: calc(32 * var(--u)); color: #4d5156; line-height: 1.45; }
+.sx-res mark { background: linear-gradient(#fde293, #fde293) no-repeat 0 0 / 0% 100%; color: inherit; padding: 0 calc(4 * var(--u)); font-weight: 700; }
+
+/* AI chat app */
+.ch-app { position: absolute; left: 5%; right: 5%; top: 17%; bottom: 27%; background: #fff; border-radius: calc(36 * var(--u)); box-shadow: 0 calc(40 * var(--u)) calc(90 * var(--u)) rgba(15, 23, 42, 0.2); overflow: hidden; display: flex; flex-direction: column; font-family: "Roboto", Arial, sans-serif; color: #0f172a; }
+.ch-hd { display: flex; align-items: center; gap: calc(18 * var(--u)); padding: calc(28 * var(--u)) calc(32 * var(--u)); border-bottom: 1px solid #eef0f3; }
+.ch-av { width: calc(64 * var(--u)); height: calc(64 * var(--u)); border-radius: 50%; background: conic-gradient(from 210deg, #6366f1, #22d3ee, #a855f7, #6366f1); display: grid; place-items: center; }
+.ch-av svg { width: 55%; height: 55%; }
+.ch-name { font-weight: 700; font-size: calc(40 * var(--u)); }
+.ch-st { font-size: calc(24 * var(--u)); color: #16a34a; }
+.ch-msgs { flex: 1; padding: calc(30 * var(--u)); display: flex; flex-direction: column; gap: calc(22 * var(--u)); overflow: hidden; }
+.ch-u { align-self: flex-end; max-width: 82%; background: #2563eb; color: #fff; border-radius: calc(30 * var(--u)) calc(30 * var(--u)) calc(8 * var(--u)) calc(30 * var(--u)); padding: calc(20 * var(--u)) calc(26 * var(--u)); font-size: calc(38 * var(--u)); line-height: 1.35; opacity: 0; }
+.ch-a { align-self: flex-start; max-width: 88%; background: #f1f5f9; border-radius: calc(30 * var(--u)) calc(30 * var(--u)) calc(30 * var(--u)) calc(8 * var(--u)); padding: calc(20 * var(--u)) calc(26 * var(--u)); font-size: calc(38 * var(--u)); line-height: 1.4; opacity: 0; }
+.ch-dots { display: flex; gap: calc(10 * var(--u)); padding: calc(8 * var(--u)) 0; }
+.ch-dots i { width: calc(16 * var(--u)); height: calc(16 * var(--u)); border-radius: 50%; background: #94a3b8; }
+.ch-step { display: flex; align-items: center; gap: calc(16 * var(--u)); margin-top: calc(10 * var(--u)); font-size: calc(35 * var(--u)); opacity: 0; }
+.ch-step .s { width: calc(36 * var(--u)); height: calc(36 * var(--u)); border-radius: 50%; border: calc(4 * var(--u)) solid #cbd5e1; border-top-color: #2563eb; flex: none; display: grid; place-items: center; }
+.ch-step .s svg { width: 70%; height: 70%; opacity: 0; }
+.ch-in { display: flex; align-items: center; gap: calc(16 * var(--u)); margin: calc(20 * var(--u)); padding: calc(10 * var(--u)) calc(12 * var(--u)) calc(10 * var(--u)) calc(28 * var(--u)); border-radius: calc(40 * var(--u)); border: 1px solid #e2e8f0; background: #f8fafc; }
+.ch-field { flex: 1; font-size: calc(36 * var(--u)); min-height: 1.3em; line-height: 1.3; color: #0f172a; }
+.ch-field .ph { color: #94a3b8; }
+.ch-send { width: calc(66 * var(--u)); height: calc(66 * var(--u)); border-radius: 50%; background: #0f172a; display: grid; place-items: center; flex: none; }
+.ch-send svg { width: 45%; height: 45%; }

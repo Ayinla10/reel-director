@@ -84,11 +84,27 @@ the **cut** timeline. In short:
   at least ~60% of the time.
 - Loop ending: the last beat is a `words` beat with `"role": "loop"` that mirrors the opening hook's
   layout, and the hook (first beat) uses `"role": "hook"` - see design.md "Loops".
+- **Respect the owner's extras answers** (per-video round, default from `edit.include`): only plan
+  B-roll if B-roll = yes, kinetic words + punch-ins if Animations = yes (else set `"zoom": "none"` in
+  edit.json), pages if Motion graphics = yes. Write them as `"include": {...}` at the top of
+  beats.json. Plan "when needed", not everywhere: each beat gets a short `why`.
+- B-roll moments are `broll` beats with a plain `query` (design.md "B-roll: when it helps"). Fetch
+  and conform them right after planning:
+  `python $SD/broll.py --work "$W" --beats "$W/beats.json" --profile "<profile.json>"`
+  (the owner's own clips folder first, then free public-domain video - no account or key needed;
+  video only; credits in `$W/broll/credits.txt`). Optional extras, never required: a Pexels/Pixabay
+  key in the profile adds stock video; `--assign 9=<clip.mp4>` attaches any clip (e.g. one the owner
+  made with Google Flow). Free libraries match loosely, so B-roll is used only where a good clip
+  exists - drop the rest instead of forcing weak footage. **Then look at `$W/review/broll_sheet.jpg` yourself before the owner
+  does.** Free libraries match loosely: reject anything off-topic, low quality, showing identifiable
+  real people in a way that implies endorsement (politicians, celebrities, named events), or showing
+  brands/logos. Fix with a simpler, more visual `query` and `broll.py ... --redo 9,15`, or drop the
+  moment (`moments.py skip 9`). Without a Pexels/Pixabay key, expect to redo about half.
 
 ## 7. Build, sound, preview
 ```
 python $SD/build.py --work "$W" --profile "<profile.json>" --beats "$W/beats.json"
-python $SD/audio.py sfx   --work "$W"
+python $SD/audio.py sfx   --work "$W"     # once per machine: real CC0 sounds + keyboard keystrokes
 python $SD/audio.py music --work "$W" --mood <mood> [--loop] --breaks "$(cat $W/music_breaks.txt)"
 #   or the creator's own track:  python $SD/audio.py music --work "$W" --track "<song>" [--loop]
 python $SD/audio.py mix   --work "$W" --events "$W/sfx_events.json" [--loop]
@@ -99,10 +115,14 @@ the user: text over the face, clipped words, captions colliding with a page, wro
 Use `npx hyperframes lint "$W/comp"` if something looks off.
 
 ## 8. The one check (before the long render)
-Show the user, in one message: the grade preview (`$W/grade/preview.jpg`), the preview contact
-sheet, the new duration, a one-line list of what was cut, and the list of pages/effects with times.
-Ask one question: render as is, or what to change. Rendering is the slow part (minutes on a
-laptop), so this check saves real time. Skip it only if the profile says `"approval": "never"`.
+Run `python $SD/moments.py --work "$W" list` - a numbered table of every planned moment (time,
+family, what it shows, why). Show the user, in one message: the grade preview
+(`$W/grade/preview.jpg`), the preview contact sheet, the B-roll sheet (`$W/review/broll_sheet.jpg`,
+tiles numbered like the table), the new duration, a one-line list of what was cut, and that table.
+Ask one question: render as is / say no to specific moments (e.g. "drop 4 and 9") / change
+something. Apply answers with `moments.py skip 4 9` (or `family broll off`), rebuild (step 7) and,
+if anything changed, re-preview. Rendering is the slow part, so this check saves real time.
+Skip it only if the profile says `"approval": "never"`.
 
 ## 9. Final render (always social size, one pass)
 ```

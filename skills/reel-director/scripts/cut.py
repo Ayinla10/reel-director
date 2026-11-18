@@ -92,6 +92,8 @@ def map_words(words, edl, removed=(), fixes=None):
         core = text.strip(".,!?;:")
         if core in fixes:
             text = text.replace(core, fixes[core])
+            if not text.strip(" .,!?;:"):  # a fix of "" deletes a mis-heard word (e.g. "Data Bricks" -> "Databricks")
+                continue
         out.append([text, t0, t1])
     out.sort(key=lambda x: x[1])
     return out

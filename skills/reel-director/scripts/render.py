@@ -91,7 +91,7 @@ def final(work, out):
     os.replace(tmp_out, out)
     size = os.path.getsize(out) / 1e6
     ts, end = key_times(work)
-    seam = [max(0, end - 0.08), 0.02] if edl.get("loop") else [max(0, end - 0.08)]
+    seam = [max(0, end - 0.06), 0.0] if edl.get("loop") else [max(0, end - 0.06)]  # exact last + first frame
     sheet(out, ts + seam, os.path.join(work, "review", "final_sheet.jpg"))
     dur = float(run([FFPROBE, "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out]).strip())
     log(f"DONE {out}  ({dur:.1f}s, {size:.0f} MB). Check sheet: {os.path.join(work, 'review', 'final_sheet.jpg')}"

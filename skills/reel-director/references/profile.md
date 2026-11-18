@@ -34,7 +34,12 @@ logo, music - go in `~/.reel-director/profiles/<name>/`). Every field is optiona
     "finish": {"smooth": 0.45, "sharpen": 0.5, "grain": 0, "vignette": 0}
   },
   "captions": {"style": "bold-box", "case": "upper", "max_words": 3},   // bold-box | color | clean | none
-  "edit": {"density": "moderate", "effects": ["pages", "words", "ui"], "zoom": "alternate", "cut": "tight"},
+  "edit": {"density": "moderate", "effects": ["pages", "words", "ui"], "zoom": "alternate", "cut": "tight",
+           "include": {"broll": true, "animations": true, "graphics": true}},   // the owner's yes/no extras
+  "broll": {"folder": null,          // creator's own clips (matched by file name to the moment)
+            "pexels_key": null,      // free key from pexels.com/api   (or env PEXELS_API_KEY)
+            "pixabay_key": null,     // free key from pixabay.com/api/docs (or env PIXABAY_API_KEY)
+            "sources": "folder,pexels,pixabay,commons,openverse"},
   "sound": {"music": "generate", "mood": "hopeful", "tracks": [], "sfx": true, "lufs": -14},
   "ending": "loop",                // loop | follow | comment | link
   "cta": {"keyword": null, "link": null},
